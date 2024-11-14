@@ -31,7 +31,7 @@ const useWeather = () => {
       setLoading({
         ...loading,
         state: true,
-        message: "Fetching weather data",
+        message: "Fetching weather data...",
       });
 
       const response = await fetch(
@@ -85,26 +85,50 @@ const useWeather = () => {
     if (selectedLocation.latitude && selectedLocation.longitude) {
       fetchWeatherData(selectedLocation.latitude, selectedLocation.longitude);
     } else if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          fetchWeatherData(position.coords.latitude, position.coords.longitude);
-        },
-        (err) => {
-          setError("Location access denied or unavailable.");
-          console.error("Geolocation error:", err.message);
+      // Check for permission status
+      navigator.permissions
+        .query({ name: "geolocation" })
+        .then((permissionStatus) => {
+          if (permissionStatus.state === "denied") {
+            setLoading({
+              ...loading,
+              state: false,
+              message: "Please turn on location services and allow access.",
+            });
+          } else {
+            navigator.geolocation.getCurrentPosition(
+              (position) => {
+                fetchWeatherData(
+                  position.coords.latitude,
+                  position.coords.longitude
+                );
+              },
+              (err) => {
+                setError("Location access denied or unavailable.");
+                console.error("Geolocation error:", err.message);
+                setLoading({
+                  ...loading,
+                  state: false,
+                  message: "Please turn on location services and allow access.",
+                });
+              }
+            );
+          }
+        })
+        .catch(() => {
+          setError("Geolocation permissions check failed.");
           setLoading({
             ...loading,
             state: false,
-            message: "",
+            message: "Please turn on location services and allow access.",
           });
-        }
-      );
+        });
     } else {
       setError("Geolocation is not supported by this browser.");
       setLoading({
         ...loading,
         state: false,
-        message: "",
+        message: "Geolocation is not supported by this browser.",
       });
     }
   }, [selectedLocation.latitude, selectedLocation.longitude]);
