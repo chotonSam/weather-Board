@@ -48,9 +48,9 @@ export default function WeatherHeadline() {
           <h1 className="text-[60px] lg:text-[80px] xl:text-[100px] leading-none md:mb-4">
             {Math.round(temperature)}°
           </h1>
-          <div className="flex items-center space-x-4 md:mb-4">
+          <div className="flex items-center space-x-2 sm:space-x-4 md:mb-4">
             <img src={pin} />
-            <h2 className="text-2xl lg:text-3xl">{`${location}, ${getName(
+            <h2 className="text-xl   lg:text-3xl">{`${location}, ${getName(
               country
             )}`}</h2>
           </div>
