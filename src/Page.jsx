@@ -1,6 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import Header from "./components/header/Header";
 import { WeatherContext } from "./context";
+import useLocationEnabled from "./hooks/useLocationEnabled";
 
 import ClearSkyImage from "./assets/backgrounds/clear-sky.jpg";
 import FewCloudsImage from "./assets/backgrounds/few-clouds.jpg";
@@ -15,9 +16,9 @@ import Spinner from "./assets/icons/Fidget_spinner.svg";
 import WeatherBoard from "./components/weather/WeatherBoard";
 
 export default function Page() {
-  const { weatherData, loading, setCoordinates } = useContext(WeatherContext); // Make sure context provides setCoordinates
+  const { weatherData, loading } = useContext(WeatherContext);
   const [climateImage, setClimateImage] = useState("");
-  const [locationError, setLocationError] = useState(false); // New state for handling permission errors
+  const isLocationEnabled = useLocationEnabled(); // Use the hook to check location services
 
   function getBackgroundImage(climate) {
     switch (climate) {
@@ -49,23 +50,24 @@ export default function Page() {
     }
   }, [weatherData.climate]);
 
-  useEffect(() => {
-    // Attempt to get the user's location, which will trigger the permission prompt
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setCoordinates({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        });
-        setLocationError(false); // Reset error if permission is granted
-      },
-      (error) => {
-        // Handle permission denied or other errors
-        console.error("Error getting location:", error);
-        setLocationError(true);
-      }
+  // Check if location services are enabled
+  if (!isLocationEnabled) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="bg-white shadow-lg rounded-lg p-6 text-center">
+          <p className="text-2xl text-gray-800 font-bold mb-4">
+            Please enable location services to access weather data.
+          </p>
+          <button
+            onClick={() => window.location.reload()} // Reloads to re-trigger location prompt
+            className="px-4 py-2 bg-blue-500 text-white font-semibold rounded"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
     );
-  }, [setCoordinates]);
+  }
 
   return (
     <>
