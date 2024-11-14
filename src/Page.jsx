@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
-
 import Header from "./components/header/Header";
 import { WeatherContext } from "./context";
+import useLocationEnabled from "./hooks/useLocationEnabled";
 
 import ClearSkyImage from "./assets/backgrounds/clear-sky.jpg";
 import FewCloudsImage from "./assets/backgrounds/few-clouds.jpg";
@@ -12,13 +12,13 @@ import SnowImage from "./assets/backgrounds/sunny.jpg";
 import ThunderStormImage from "./assets/backgrounds/thunderstorm.jpg";
 import WinterImage from "./assets/backgrounds/winter.jpg";
 
-import WeatherBoard from "./components/weather/WeatherBoard";
-
 import Spinner from "./assets/icons/Fidget_spinner.svg";
+import WeatherBoard from "./components/weather/WeatherBoard";
 
 export default function Page() {
   const { weatherData, loading } = useContext(WeatherContext);
   const [climateImage, setClimateImage] = useState("");
+  const isLocationEnabled = useLocationEnabled(); // Use the hook
 
   function getBackgroundImage(climate) {
     switch (climate) {
@@ -44,10 +44,22 @@ export default function Page() {
   }
 
   useEffect(() => {
-    const bgImage = getBackgroundImage(weatherData.climate);
-
-    setClimateImage(bgImage);
+    if (weatherData.climate) {
+      const bgImage = getBackgroundImage(weatherData.climate);
+      setClimateImage(bgImage);
+    }
   }, [weatherData.climate]);
+
+  // If location is not enabled, display a prompt message
+  if (!isLocationEnabled) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-2xl text-gray-800 font-bold">
+          Please enable location services to access weather data.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -56,9 +68,8 @@ export default function Page() {
           <img
             src={Spinner}
             alt="Loading..."
-            className="animate-spin h-16 w-16 mb-4 "
+            className="animate-spin h-16 w-16 mb-4"
           />
-
           <p className="text-2xl text-gray-800 font-bold mb-2">
             {loading.message}
           </p>

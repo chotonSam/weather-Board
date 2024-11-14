@@ -95,7 +95,7 @@ const useWeather = () => {
           setLoading({
             ...loading,
             state: false,
-            message: "Location access denied",
+            message: "",
           });
         }
       );
@@ -103,8 +103,8 @@ const useWeather = () => {
       setError("Geolocation is not supported by this browser.");
       setLoading({
         ...loading,
-        state: true,
-        message: "turn on location",
+        state: false,
+        message: "",
       });
     }
   }, [selectedLocation.latitude, selectedLocation.longitude]);
