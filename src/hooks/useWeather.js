@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from "react";
+
 import { LocationContext } from "../context";
 
 const useWeather = () => {
@@ -54,7 +55,7 @@ const useWeather = () => {
         temperature: data?.main?.temp,
         maxTemperature: data?.main?.temp_max,
         mainTemperature: data?.main?.temp_min,
-        humidity: data?.main?.humidity,
+        humidity: data?.main?.humidity, // Corrected typo
         cloudPercentage: data?.clouds?.all,
         wind: data?.wind?.speed,
         time: data?.dt,
@@ -64,7 +65,7 @@ const useWeather = () => {
 
       setWeatherData(updatedWeatherData);
     } catch (err) {
-      setError(`Failed to fetch weather data: ${err.message}`);
+      setError(err);
       console.error("Error fetching weather data:", err);
     } finally {
       setLoading({
@@ -84,27 +85,9 @@ const useWeather = () => {
 
     if (selectedLocation.latitude && selectedLocation.longitude) {
       fetchWeatherData(selectedLocation.latitude, selectedLocation.longitude);
-    } else if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          fetchWeatherData(position.coords.latitude, position.coords.longitude);
-        },
-        (err) => {
-          setError("Location access denied or unavailable.");
-          console.error("Geolocation error:", err.message);
-          setLoading({
-            ...loading,
-            state: false,
-            message: "",
-          });
-        }
-      );
     } else {
-      setError("Geolocation is not supported by this browser.");
-      setLoading({
-        ...loading,
-        state: false,
-        message: "",
+      navigator.geolocation.getCurrentPosition(function (position) {
+        fetchWeatherData(position.coords.latitude, position.coords.longitude);
       });
     }
   }, [selectedLocation.latitude, selectedLocation.longitude]);
