@@ -1,7 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import Header from "./components/header/Header";
 import { WeatherContext } from "./context";
-import useLocationEnabled from "./hooks/useLocationEnabled";
 
 import ClearSkyImage from "./assets/backgrounds/clear-sky.jpg";
 import FewCloudsImage from "./assets/backgrounds/few-clouds.jpg";
@@ -16,9 +15,9 @@ import Spinner from "./assets/icons/Fidget_spinner.svg";
 import WeatherBoard from "./components/weather/WeatherBoard";
 
 export default function Page() {
-  const { weatherData, loading } = useContext(WeatherContext);
+  const { weatherData, loading, setCoordinates } = useContext(WeatherContext); // Make sure context provides setCoordinates
   const [climateImage, setClimateImage] = useState("");
-  const isLocationEnabled = useLocationEnabled(); // Use the hook
+  const [locationError, setLocationError] = useState(false); // New state for handling permission errors
 
   function getBackgroundImage(climate) {
     switch (climate) {
@@ -50,16 +49,23 @@ export default function Page() {
     }
   }, [weatherData.climate]);
 
-  // If location is not enabled, display a prompt message
-  if (!isLocationEnabled) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <p className="text-2xl text-gray-800 font-bold">
-          Please enable location services to access weather data.
-        </p>
-      </div>
+  useEffect(() => {
+    // Attempt to get the user's location, which will trigger the permission prompt
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setCoordinates({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
+        setLocationError(false); // Reset error if permission is granted
+      },
+      (error) => {
+        // Handle permission denied or other errors
+        console.error("Error getting location:", error);
+        setLocationError(true);
+      }
     );
-  }
+  }, [setCoordinates]);
 
   return (
     <>
